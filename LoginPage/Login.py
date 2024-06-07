@@ -71,12 +71,12 @@ def login() -> Optional[RedirectResponse]:
                                                         border-bottom: 2px rgba(40,40,40,0.35) solid;
                                                         border-right: 2px rgba(40,40,40,0.35) solid;
                                                                                                """):
-            ui.label("欢迎登录！").classes("text-h5 text-center text-light  ")
-            username = ui.input('账号').on('keydown.enter', try_login).props("outlined").style("color: rgb(37 99 235)").classes("transparent ")
-            password = ui.input('密码', password=True, password_toggle_button=True).on('keydown.enter', try_login).props("outlined").classes("transparent ")
-            ui.button('登陆', on_click=try_login)
+            ui.label("欢迎登录！").classes("text-h5 text-center  text-grey-1 ")
+            username = ui.input('账号').on('keydown.enter', try_login).props("""outlined rounded dark""").classes(" ")
+            password = ui.input('密码', password=True, password_toggle_button=True).on('keydown.enter', try_login).props("outlined rounded dark").classes(" ")
+            ui.button('登录', on_click=try_login)
             ui.space()
-            ui.link("""还没有账户？点击注册一下""",target="/register")
+            ui.link("""还没有账户？点击注册一下""",target="/register").classes("text-h6 text-center text-light-green-8  ")
             ui.markdown()
         #with ui.column().classes("col-span-7"):
         ui.image("./assets/login.jpg").props(""" width=15% """).classes("inset-shadow-down ")
