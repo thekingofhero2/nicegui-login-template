@@ -1,9 +1,11 @@
-from tortoise import Tortoise
-
-async def init_db() -> None:
-    await Tortoise.init(db_url='sqlite://db2.sqlite3', modules={'models': ['Models']})
-    await Tortoise.generate_schemas()
+from settings import *
+def init_db() -> None:
+    Base.metadata.create_all(engine)
 
 
 async def close_db() -> None:
-    await Tortoise.close_connections()
+    try:
+        db_session.close_all()
+    except:
+        import traceback
+        traceback.print_exc()

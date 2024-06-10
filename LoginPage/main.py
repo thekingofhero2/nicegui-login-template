@@ -24,10 +24,10 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
 
 
-
+app.on_startup(init_db)
+app.on_shutdown(close_db)
 app.add_middleware(AuthMiddleware)
-# app.on_startup(init_db)
-# app.on_shutdown(close_db)
+
 
 @ui.page('/')
 def main_page() -> None:

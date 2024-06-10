@@ -49,7 +49,7 @@ def login() -> Optional[RedirectResponse]:
     ui.page_title("登录")
     page_init()
     async def try_login() -> None:  # local function to avoid passing username and password as arguments
-        if await Models.User.filter(name == username.value).get("pwd") == password.value:
+        if await Models.User.filter(uname = username.value).get("pwd") == password.value:
             app.storage.user.update({'username': username.value, 'authenticated': True})
             ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
         else:
