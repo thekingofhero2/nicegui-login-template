@@ -5,9 +5,9 @@ from typing import Optional
 from fastapi.responses import RedirectResponse
 
 from nicegui import Client, app, ui
-import Models 
-
-
+import DB.Models as Models 
+from DB.CRUD import *
+from settings import db_session
 
 
 
@@ -49,11 +49,12 @@ def login() -> Optional[RedirectResponse]:
     ui.page_title("登录")
     page_init()
     async def try_login() -> None:  # local function to avoid passing username and password as arguments
-        if await Models.User.filter(uname = username.value).get("pwd") == password.value:
-            app.storage.user.update({'username': username.value, 'authenticated': True})
-            ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
-        else:
-            ui.notify('Wrong username or password', color='negative')
+        print(check_pwd(db = db_session,uname = username.value,pwd=password.value))
+        # if await Models.User.filter(uname = username.value).get("pwd") == password.value:
+        #     app.storage.user.update({'username': username.value, 'authenticated': True})
+        #     ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
+        # else:
+        #     ui.notify('Wrong username or password', color='negative')
 
     if app.storage.user.get('authenticated', False):
         return RedirectResponse('/')

@@ -3,7 +3,8 @@ from fastapi import Request
 from fastapi.responses import RedirectResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from Login import login
-from DB import init_db,close_db
+from DB.DB import init_db,close_db
+
 
 unrestricted_page_routes = {'/login','/register'}
 
