@@ -38,8 +38,9 @@ def register(db:Session = Depends(get_db)):
     page_init()
     app.storage.client["register.check_uname"] = False
     async def check_uname() -> None:  # local function to avoid passing username and password as arguments
-        app.storage.client["register.check_uname"] = False
-        print(check_pwd(db=db,uname = username.value,pwd=password.value))
+        print(check_user_exists(db=db,uname = username.value))
+        if not check_user_exists(db=db,uname = username.value):
+            app.storage.client["register.check_uname"] = True
 
     if app.storage.user.get('authenticated', False):
         return RedirectResponse('/')
