@@ -8,3 +8,12 @@ engine = create_engine(SQLALCHEMY_DB_URI,connect_args={"check_same_thread": Fals
 
 db_session =  sessionmaker(engine)
 #Base.metadata.create_all(engine)
+
+
+# Dependency
+def get_db():
+    db = db_session()
+    try:
+        yield db
+    finally:
+        db.close()

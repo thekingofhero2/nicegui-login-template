@@ -1,13 +1,13 @@
 from pathlib import Path
 
 from typing import Optional
-
+from fastapi import Depends
 from fastapi.responses import RedirectResponse
 
 from nicegui import Client, app, ui
 import DB.Models as Models 
 from DB.CRUD import *
-from settings import db_session
+from settings import get_db
 
 
 
@@ -34,22 +34,46 @@ background-color: #840b2a;
 
 
 @ui.page("/register")
-def register():
-    ui.page_title("注册")
-    with ui.card().classes("h-1/4 sm:w-1/3 items-stretch px-[2.5rem] login-card"):
-        ui.label("欢迎登录！").classes("text-h5 text-center text-dark")
-        username = ui.input('账号').props("outlined").style("color: rgb(37 99 235)")
-        password = ui.input('密码', password=True, password_toggle_button=True).props("outlined")
-        password_2 = ui.input('再次输入', password=True, password_toggle_button=True).props("outlined")
-        ui.button('注册')
-   
-    return True
+def register(db:Session = Depends(get_db)):
+    page_init()
+    app.storage.client["register.check_uname"] = False
+    async def check_uname() -> None:  # local function to avoid passing username and password as arguments
+        app.storage.client["register.check_uname"] = False
+        print(check_pwd(db=db,uname = username.value,pwd=password.value))
+
+    if app.storage.user.get('authenticated', False):
+        return RedirectResponse('/')
+    with ui.row().classes("w-full items-stretch absolute-center justify-center"):
+        with ui.card().classes("items-stretch login-card col-span-8 inset-shadow-down ").style("""
+                                                        gap: 20px;
+                                                        border-radius: 10px;
+                                                        backdrop-filter: blur(19px);
+                                                        background-color: rgba(0,191,255, 0.146);
+                                                        box-shadow: rgba(0, 0, 0, 0.3) 2px 8px 8px;
+                                                        border: 2px rgba(255,255,255,0.4) solid;
+                                                        border-bottom: 2px rgba(40,40,40,0.35) solid;
+                                                        border-right: 2px rgba(40,40,40,0.35) solid;
+                                                                                               """):
+            ui.label("欢迎注册！").classes("text-h5 text-center text-grey-1 ")
+            username = ui.input('账号',on_change=check_uname).props("outlined").style("color: rgb(37 99 235)")
+            with username:
+                ui.icon(name="check",size="md",color="green").bind_visibility(app.storage.client,"register.check_uname")
+            password = ui.input('密码', password=True, password_toggle_button=True).props("outlined")
+            password_2 = ui.input('再次输入', password=True, password_toggle_button=True).props("outlined")
+            ui.button('注册')
+            ui.markdown()
+        #with ui.column().classes("col-span-7"):
+        ui.image("./assets/login.jpg").props(""" width=15% """).classes("inset-shadow-down ")
+    with ui.footer():
+        ui.label("background css is from https://projects.verou.me/css3patterns/#rainbow-bokeh")
+    return None
+
 @ui.page('/login')
-def login() -> Optional[RedirectResponse]:
+def login(db:Session = Depends(get_db)) -> Optional[RedirectResponse]:
     ui.page_title("登录")
     page_init()
     async def try_login() -> None:  # local function to avoid passing username and password as arguments
-        print(check_pwd(db = db_session,uname = username.value,pwd=password.value))
+        print(check_pwd(db=db,uname = username.value,pwd=password.value))
         # if await Models.User.filter(uname = username.value).get("pwd") == password.value:
         #     app.storage.user.update({'username': username.value, 'authenticated': True})
         #     ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
