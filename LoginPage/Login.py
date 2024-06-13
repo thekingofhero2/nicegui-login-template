@@ -3,12 +3,12 @@ from pathlib import Path
 from typing import Optional
 from fastapi import Depends
 from fastapi.responses import RedirectResponse
-
+from hashlib import md5
 from nicegui import Client, app, ui
 import DB.Models as Models 
 from DB.CRUD import *
 from settings import get_db
-
+import time
 
 
         
@@ -27,21 +27,28 @@ background-size: 470px 470px, 970px 970px, 410px 410px, 610px 610px, 530px 530px
 background-color: #840b2a;
                }
                """)
-    # ui.query("main.q-page").classes("flex flex-col")
-    # ui.query(".nicegui-content").classes("grow flex-center")
-    # ui.add_head_html('<link rel="stylesheet" href="asset/main.css">')
-    # #LoginUI.build()
 
 
 @ui.page("/register")
 def register(db:Session = Depends(get_db)):
+    ui.page_title("注册")
     page_init()
     app.storage.client["register.check_uname"] = False
-    async def check_uname() -> None:  # local function to avoid passing username and password as arguments
-        print(check_user_exists(db=db,uname = username.value))
+    def check_uname() -> None:  # local function to avoid passing username and password as arguments
         if not check_user_exists(db=db,uname = username.value):
             app.storage.client["register.check_uname"] = True
+        else:
+            app.storage.client["register.check_uname"] = False
+            ui.notify("账户已存在",type="warning")
 
+    def check_register() -> None:
+        if password.value != password_2.value:
+            ui.notify("两次输入的密码不一致",type="warning")
+            return 
+        else:
+            create_user(db=db,uname = username.value,pwd=md5(password.value.encode("utf-8")).hexdigest())
+            ui.notify("注册成功",type="positive")
+            
     if app.storage.user.get('authenticated', False):
         return RedirectResponse('/')
     with ui.row().classes("w-full items-stretch absolute-center justify-center"):
@@ -61,32 +68,30 @@ def register(db:Session = Depends(get_db)):
                 ui.icon(name="check",size="md",color="green").bind_visibility(app.storage.client,"register.check_uname")
             password = ui.input('密码', password=True, password_toggle_button=True).props("outlined")
             password_2 = ui.input('再次输入', password=True, password_toggle_button=True).props("outlined")
-            ui.button('注册')
+            ui.button('注册',on_click = check_register)
             ui.markdown()
+            ui.space()
+            ui.link("""返回登录""",target="/login").classes("text-h6 text-center text-light-green-8  ")
         #with ui.column().classes("col-span-7"):
         ui.image("./assets/login.jpg").props(""" width=15% """).classes("inset-shadow-down ")
     with ui.footer():
         ui.label("background css is from https://projects.verou.me/css3patterns/#rainbow-bokeh")
     return None
 
+
+
 @ui.page('/login')
 def login(db:Session = Depends(get_db)) -> Optional[RedirectResponse]:
     ui.page_title("登录")
     page_init()
     async def try_login() -> None:  # local function to avoid passing username and password as arguments
-        print(check_pwd(db=db,uname = username.value,pwd=password.value))
-        # if await Models.User.filter(uname = username.value).get("pwd") == password.value:
-        #     app.storage.user.update({'username': username.value, 'authenticated': True})
-        #     ui.navigate.to(app.storage.user.get('referrer_path', '/'))  # go back to where the user wanted to go
-        # else:
-        #     ui.notify('Wrong username or password', color='negative')
-
+        if check_pwd(db=db,uname = username.value,pwd=md5(password.value.encode("utf-8")).hexdigest()):
+            app.storage.user['authenticated'] = True
+            app.storage.user["username"] = username.value
+            ui.navigate.to('/')
     if app.storage.user.get('authenticated', False):
         return RedirectResponse('/')
     with ui.row().classes("w-full items-stretch absolute-center justify-center"):
-        # ui.label("hahah")
-        # with ui.column().classes("col-span-5"):
-        #with ui.card().classes("h-1/4 sm:w-1/3 items-stretch px-[2.5rem] login-card"):
         with ui.card().classes("items-stretch login-card col-span-8 inset-shadow-down ").style("""
                                                         gap: 20px;
                                                         border-radius: 10px;
