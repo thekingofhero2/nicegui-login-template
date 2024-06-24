@@ -2,6 +2,9 @@
 ```
 pip install -r requirements.txt
 ```
+```
+国内加速访问地址：https://gitee.com/thekingofhero/nicegui_login_template
+```
 
 # 2、运行测试
 
