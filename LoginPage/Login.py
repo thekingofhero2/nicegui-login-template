@@ -89,6 +89,8 @@ def login(db:Session = Depends(get_db)) -> Optional[RedirectResponse]:
             app.storage.user['authenticated'] = True
             app.storage.user["username"] = username.value
             ui.navigate.to('/')
+        else:
+            ui.notify("用户名或密码错误",type='negative')
     if app.storage.user.get('authenticated', False):
         return RedirectResponse('/')
     with ui.row().classes("w-full items-stretch absolute-center justify-center"):
